@@ -1,5 +1,6 @@
 import express, { Express } from "express";
 import dotenv from "dotenv";
+
 import connectToDB from "./database/db";
 
 // initialize express server
@@ -15,7 +16,6 @@ connectToDB();
 // all routes
 
 // start the express server
-const PORT = process.env.PORT || 5500;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(process.env.PORT, () => {
+  console.log(`Server running on port ${process.env.PORT}`);
 });
