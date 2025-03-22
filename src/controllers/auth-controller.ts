@@ -7,6 +7,7 @@ import asyncHandler from "../utils/async-handler-utils";
 import ApiError from "../utils/api-error-utils";
 import { generateOTP, otpExpiresDate } from "../utils/otp-utils";
 import { sendVerificationOTP } from "../config/email-config";
+import { passwordRegex } from "../constants/regex";
 
 export const userRegistrationController = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -17,6 +18,17 @@ export const userRegistrationController = asyncHandler(
     if (existingUser) {
       return next(new ApiError(400, "Email already exists"));
     }
+
+    if (!passwordRegex.test(password)) {
+      console.log("Password validation failed:", password);
+      return next(
+        new ApiError(
+          400,
+          "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+        )
+      );
+    }
+
     // hash the passwword
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = bcrypt.hashSync(password, salt);
@@ -26,15 +38,13 @@ export const userRegistrationController = asyncHandler(
     const otpExpires = otpExpiresDate;
 
     // save user
-    const user = new User({
+    const createdUser = await User.create({
       email,
       username,
       password: hashedPassword,
       otp,
       otpExpires,
     });
-
-    const createdUser = await user.save();
 
     // generate jwt
     let idToken = jwt.sign(

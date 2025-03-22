@@ -17,6 +17,7 @@ connectToDB();
 
 // all routes
 app.use("/api/auth", authRoutes);
+
 // error handling
 app.use(errorHandler);
 

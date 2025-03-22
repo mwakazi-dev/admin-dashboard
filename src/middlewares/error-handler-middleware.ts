@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
-import { MongoServerError } from "mongodb";
 import jwt, { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
 import ApiError from "../utils/api-error-utils";
 
@@ -21,10 +20,10 @@ const errorHandler = (
       .join(", ");
   }
 
-  // ✅ Handle Duplicate Key Errors (MongoDB)
-  if (err instanceof MongoServerError && err.code === 11000) {
+  // ✅ Handle MongoDB Duplicate Key Errors
+  if (err.code === 11000) {
     statusCode = 400;
-    message = `The ${Object.keys(err.keyPattern)[0]} already exists.`;
+    message = `The ${Object.keys(err.keyValue)[0]} already exists.`;
   }
 
   // ✅ Handle JWT Errors
@@ -36,13 +35,19 @@ const errorHandler = (
     message = "Invalid token. Please authenticate again.";
   }
 
-  // // ✅ Handle Bcrypt Errors (Hashing or Comparison)
+  // ✅ Handle Bcrypt Errors
   if (err.message && err.message.includes("bcrypt")) {
     statusCode = 500;
     message = "Internal server error during password encryption.";
   }
 
-  // Log errors in development mode
+  // ✅ Handle Custom API Errors
+  if (err instanceof ApiError) {
+    statusCode = err.statusCode;
+    message = err.message;
+  }
+
+  // ✅ Log errors in development mode
   if (process.env.NODE_ENV === "development") {
     console.error("Error:", err);
   }

@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema(
       required: [true, "Please enter your username"],
       unique: true,
       trim: true,
+      minLength: [3, "Username must be at least 4 characters long"],
       validate: {
         validator: function (value: string) {
           const regex = /^[a-zA-Z0-9]+$/;
@@ -32,7 +33,6 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "Please enter your password"],
-      minLength: [8, "Password must be at least 8 characters long"],
     },
     isVerified: {
       type: Boolean,
