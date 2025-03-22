@@ -150,3 +150,50 @@ export const verifyOTPController = asyncHandler(
       .json({ success: true, message: "Email verified successfully" });
   }
 );
+
+export const changePasswordController = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    // check if the user exists
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return next(new ApiError(404, "User not found"));
+    }
+
+    const { oldPassword, newPassword } = req.body;
+
+    const isPasswordCorrect = await bcrypt.compare(oldPassword, user.password);
+    if (!isPasswordCorrect) {
+      return next(new ApiError(400, "Old password is incorrect"));
+    }
+
+    if (!passwordRegex.test(newPassword)) {
+      return next(
+        new ApiError(
+          400,
+          "New password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+        )
+      );
+    }
+
+    // hash the new password
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(newPassword, salt);
+
+    // update the password
+    const updatedUser = await User.findByIdAndUpdate(req.user._id, {
+      password: hashedPassword,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Password changed successfully",
+      data: {
+        _id: updatedUser?._id,
+        username: updatedUser?.username,
+        email: updatedUser?.email,
+        isVerified: updatedUser?.isVerified,
+        role: updatedUser?.role,
+      },
+    });
+  }
+);
