@@ -14,13 +14,12 @@ export const userRegistrationController = asyncHandler(
     const { username, email, password } = req.body;
 
     // check if user is already registered
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
-      return next(new ApiError(400, "Email already exists"));
+      return next(new ApiError(400, "User already exists"));
     }
 
     if (!passwordRegex.test(password)) {
-      console.log("Password validation failed:", password);
       return next(
         new ApiError(
           400,
@@ -73,7 +72,52 @@ export const userRegistrationController = asyncHandler(
   }
 );
 
-export const userLoginController = async (req: Request, res: Response) => {};
+export const userLoginController = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { username, password } = req.body;
+    // check if the user exists
+    const user = await User.findOne({
+      $or: [{ email: username }, { username: username }],
+    });
+    if (!user) {
+      return next(new ApiError(401, "Invalid credentials"));
+    }
+
+    // check if the password is correct
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
+      return next(new ApiError(401, "Password is incorrect"));
+    }
+    // generate jwt
+    let idToken = jwt.sign(
+      {
+        _id: user._id,
+        email: user.email,
+        username: user.username,
+        isVerified: user.isVerified,
+      },
+      process.env.JWT_SECRET as string,
+      {
+        expiresIn: "1hr",
+      }
+    );
+
+    // send jwt as response
+    res.status(200).json({
+      success: true,
+      idToken,
+      expiresIn: "1hr",
+      message: "Login successful",
+      data: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        isVerified: user.isVerified,
+        role: user.role,
+      },
+    });
+  }
+);
 
 export const verifyOTPController = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
