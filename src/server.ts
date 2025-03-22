@@ -2,6 +2,8 @@ import express, { Express } from "express";
 import dotenv from "dotenv";
 
 import connectToDB from "./database/db";
+import authRoutes from "./routes/auth-routes";
+import errorHandler from "./middlewares/error-handler-middleware";
 
 // initialize express server
 dotenv.config();
@@ -14,6 +16,9 @@ app.use(express.json());
 connectToDB();
 
 // all routes
+app.use("/api/auth", authRoutes);
+// error handling
+app.use(errorHandler);
 
 // start the express server
 app.listen(process.env.PORT, () => {
