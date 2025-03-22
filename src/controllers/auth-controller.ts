@@ -197,3 +197,41 @@ export const changePasswordController = asyncHandler(
     });
   }
 );
+
+export const resetPasswordController = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { username, password } = req.body;
+    // check if the user exists
+    const user = await User.findOne({
+      $or: [{ email: username }, { username }],
+    });
+    if (!user) {
+      return next(new ApiError(404, "User not found"));
+    }
+    // validate the password
+
+    if (!passwordRegex.test(password)) {
+      return next(
+        new ApiError(
+          400,
+          "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+        )
+      );
+    }
+
+    // hash the new password
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(password, salt);
+
+    // update the password
+    await User.findByIdAndUpdate(user._id, {
+      password: hashedPassword,
+    });
+
+    res.status(200).json({
+      success: true,
+      message:
+        "Password changed successfully. You can now login with your new password",
+    });
+  }
+);

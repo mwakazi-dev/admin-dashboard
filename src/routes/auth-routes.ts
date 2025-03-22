@@ -2,6 +2,7 @@ import express, { Router } from "express";
 
 import {
   changePasswordController,
+  resetPasswordController,
   userLoginController,
   userRegistrationController,
   verifyOTPController,
@@ -22,6 +23,9 @@ router.post("/verify-otp", authMiddleware, verifyOTPController);
 
 // change password
 router.post("/change-password", authMiddleware, changePasswordController);
+
+// reset password
+router.post("/reset-password", resetPasswordController);
 
 // export router
 export default router;
