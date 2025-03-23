@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "src/server.js",
   "scripts": {
-    "build": "tsc",
+    "build": "npm install",
     "start": "node dist/server.js",
     "dev": "nodemon src/server.ts"
   },
