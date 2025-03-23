@@ -3,6 +3,9 @@ export interface IUser {
   email: string;
   password: string;
   isVerified: boolean;
-  otp: string | null | undefined;
-  otpExpires: Date | null | undefined;
+  otp?: string;
+  otpExpires?: Date;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
+  role?: string;
 }

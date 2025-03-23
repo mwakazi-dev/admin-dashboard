@@ -1,5 +1,6 @@
 import express, { Express } from "express";
 import dotenv from "dotenv";
+import cors from "cors";
 
 import connectToDB from "./database/db";
 import authRoutes from "./routes/auth-routes";
@@ -11,6 +12,9 @@ const app: Express = express();
 
 // parse requests
 app.use(express.json());
+
+// cors middleware
+app.use(cors());
 
 // connect to database
 connectToDB();

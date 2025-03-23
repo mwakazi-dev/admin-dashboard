@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 
+import { IUser } from "../interfaces/user";
+
 // create user schema with username, email and password
 const userSchema = new mongoose.Schema(
   {
@@ -49,10 +51,16 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    resetPasswordToken: {
+      type: String,
+    },
+    resetPasswordExpires: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-export default mongoose.model("User", userSchema);
+export default mongoose.model<IUser>("User", userSchema);
